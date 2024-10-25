@@ -47,7 +47,6 @@ void mainMenu(int clientfd);
 void doLoginResponse(json &responsejs);
 void doRegResponse(json &responsejs);
 
-
 int main(int argc, char *argv[])
 {
     if (argc < 3)
@@ -159,16 +158,8 @@ int main(int argc, char *argv[])
             {
                 cerr << "send reg msg error:" << request << endl;
             }
-            else
-            {
-                char buffer[1024] = {0};
-                len = recv(clientfd, buffer, 1024, 0);
-                if (len == -1)
-                {
-                    cerr << "recv reg response error" << endl;
-                }
-                sem_wait(&rwsem); // 等待信号量，由子线程处理完注册的响应消息后，通知这里
-            }
+
+            sem_wait(&rwsem); // 等待信号量，由子线程处理完注册的响应消息后，通知这里
         }
         break;
         case 3: // quit业务
@@ -243,14 +234,15 @@ void readTaskHandler(int clientfd)
 
         if (LOGIN_MSG_ACK == msgType)
         {
-            doLoginResponse(js);//处理登录响应的业务逻辑
-            sem_post(&rwsem);//通知主线程，登录结果处理完成
+            doLoginResponse(js); // 处理登录响应的业务逻辑
+            sem_post(&rwsem);    // 通知主线程，登录结果处理完成
             continue;
         }
 
-        if( REG_MSG_ACK == msgType){
+        if (REG_MSG_ACK == msgType)
+        {
             doRegResponse(js);
-            sem_post(&rwsem);//通知主线程，注册结果处理完成
+            sem_post(&rwsem); // 通知主线程，注册结果处理完成
             continue;
         }
     }
